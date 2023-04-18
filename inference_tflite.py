@@ -13,6 +13,10 @@ import time
 Benchmark results on 18/04 with a single audio file: Processing : ~ 0.8 sec. Inference: ~0.01 sec.
 '''
 
+AUDIO_PATH = "./testinput/mn-test (1).mp3"
+MODEL_PATH = "./tflite_model.tflite"
+
+
 ''' AUDIO PIPELINE '''
 ''' The following functions are used to process the data ready for input '''
 
@@ -162,7 +166,7 @@ languages = """
 target2lang = tuple(sorted(languages))
 
 # model dir, change to saved tflite directory
-model_dir = os.getcwd() + "/tflite_model.tflite"
+model_dir = os.getcwd() + MODEL_PATH
 
 # Load the TFLite model in TFLite Interpreter
 interpreter = tf.lite.Interpreter(model_dir)
@@ -171,6 +175,6 @@ input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
 # feel free to change this path to whatever file you wish to test
-prediction = predict("./testinput/mn-test (1).mp3", timing=True) 
+prediction = predict(AUDIO_PATH, timing=True) 
 # finally we pass in the returned index into target2lang to map it to a language code
 print(f"Predicted Language: {target2lang[prediction]}")
