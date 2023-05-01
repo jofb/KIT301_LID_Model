@@ -13,7 +13,7 @@ import time
 Benchmark results on 18/04 with a single audio file: Processing : ~ 0.8 sec. Inference: ~0.01 sec.
 '''
 
-AUDIO_PATH = "./testinput/mn-test (1).mp3"
+AUDIO_PATH = "./testinput/et-test (1).mp3"
 MODEL_PATH = "./tflite_model.tflite"
 
 
@@ -33,9 +33,10 @@ def read_mp3(path, resample_rate=16000):
     new_len = round(len(f.samples) * float(resample_rate) / f.sample_rate)
     signal = scipy.signal.resample(f.samples, new_len)
     
+
     # Normalize to [-1, 1]
     signal /= np.abs(signal).max()
-    
+
     return signal, resample_rate
 
 # converts signals to a logmel spectrogram, used as final input for model
@@ -73,6 +74,7 @@ def remove_silence(signal, rate):
 def read_mp3_wrapper(x):
     # get the signal and rate from read_mp3
     signal, sample_rate = read_mp3(x["path"])
+    print(signal)
     new_dict = dict(x, signal=signal, sample_rate=sample_rate)
     # dict now looks like: {path, signal, sample_rate}
     return new_dict
