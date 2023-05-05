@@ -96,6 +96,28 @@ def extract_features(x):
     # where logmelspecs is the spectrogram we just created
     return new_dict
 
+def extract_features_record(x):
+    with tf.device("GPU"):
+        signal, rate = x["signal"], x["sample_rate"]
+        logmelspecs = logmelspectrograms([signal], rate)
+        logmelspecs_smn = cmvn(logmelspecs, normalize_variance=False)
+        # save the spectrogram to file:
+        # log_melspec = logmelspecs_smn.astype(np.float32)
+        tensor = tf.convert_to_tensor(logmelspecs_smn)
+
+        os.makedirs(os.getcwd() + "/spectrograms", exist_ok=True)
+        with tf.io.TFRecordWriter(os.getcwd() + "/spectrograms/spectrogram.tfrecord") as writer:
+            spectrogram = tf.train.Example(features=tf.train.Features(feature={
+                'log_melspec': tf.train.Feature(float_list=tf.train.FloatList(value=tensor.numpy().flatten()))
+            }))
+            writer.write(spectrogram.SerializeToString())
+
+        # end file saving
+    new_dict = dict(x, logmelspecs=logmelspecs_smn)
+    # dict now looks like: {path, signal, sample_rate, logmelspecs}
+    # where logmelspecs is the spectrogram we just created
+    return new_dict
+
 def signal_is_not_empty(x):
     return tf.size(x["signal"]) > 0
 
@@ -110,7 +132,8 @@ def predict(path, timing=False):
     # read the file, remove silence, then get our spectrogram
     x = read_mp3_wrapper({"path": path})
     x = remove_silence_wrapper(x)
-    x = extract_features(x)
+    # x = extract_features(x)
+    x = extract_features_record(x)
     
     # our input data is in x['logmelspecs'][0]
     input_data = x['logmelspecs'][0]
